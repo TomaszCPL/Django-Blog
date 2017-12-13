@@ -13,5 +13,5 @@ class PostAdmin(admin.ModelAdmin):
     class Meta:
         model = Post
 
-admin.site.Register(Post, PostAdmin)
+admin.site.register(Post, PostAdmin)
 
