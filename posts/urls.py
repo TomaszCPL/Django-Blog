@@ -1,17 +1,20 @@
+from django.conf.urls import url
 from django.contrib import admin
-from django.urls import include, url
-from posts import views
 
 from .views import (
-posts_list,
-posts_create,
-post_detail,
-)
+	post_list,
+	post_create,
+	post_detail,
+	post_update,
+	post_delete,
+	)
 
 urlpatterns = [
-    url(r'^$', "posts.views.post_list"),
-    url(r'^create$', "posts.views.post_create"),
-    url(r'^detail', "posts.views.post_detail"),
-    url(r'^create$', "posts.views.post_update"),
-    url(r'^create$', "posts.views.post_delete"),
+	url(r'^$', post_list, name='list'),
+    url(r'^create/$', post_create),
+    #url(r'^(?P<slug>[\w-]+)/$', post_detail, name='detail'),
+    url(r'^(?P<slug>[\w-]+)/$', PostDetailView.as_view(), name='detail'), #Django Code Review #3 on joincfe.com/youtube/
+    url(r'^(?P<slug>[\w-]+)/edit/$', post_update, name='update'),
+    url(r'^(?P<slug>[\w-]+)/delete/$', post_delete),
+    #url(r'^posts/$', "<appname>.views.<function_name>"),
 ]
