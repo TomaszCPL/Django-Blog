@@ -1,4 +1,12 @@
-from urllib import quote_plus
+try:
+    from urllib import quote_plus #python 2
+except:
+    pass
+
+try:
+    from urllib.parse import quote_plus #python 3
+except: 
+    pass
 
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -27,6 +35,29 @@ def post_create(request):
 	}
 	return render(request, "post_form.html", context)
 
+
+from django.views.generic import DetailView
+
+class PostDetailView(DetailView):
+	template_name = 'post_detail.html' 
+	
+	def get_object(self, *args, **kwargs):
+		slug = self.kwargs.get("slug")
+		instance = get_object_or_404(Post, slug=slug)
+		if instance.publish > timezone.now().date() or instance.draft:
+			if not request.user.is_staff or not request.user.is_superuser:
+				raise Http404
+		return instance
+	
+	def get_context_data(self, *args, **kwargs):
+		context = super(PostDetailView, self).get_context_data(*args, **kwargs)
+		instance = context['object']
+		context['share_string'] = quote_plus(instance.content)
+		return context
+	
+# in urls.py --> PostDetailView.as_view() instead of post_detail
+
+
 def post_detail(request, slug=None):
 	instance = get_object_or_404(Post, slug=slug)
 	if instance.publish > timezone.now().date() or instance.draft:
@@ -54,7 +85,7 @@ def post_list(request):
 				Q(user__first_name__icontains=query) |
 				Q(user__last_name__icontains=query)
 				).distinct()
-	paginator = Paginator(queryset_list, 2) # Show 25 contacts per page
+	paginator = Paginator(queryset_list, 8) # Show 25 contacts per page
 	page_request_var = "page"
 	page = request.GET.get(page_request_var)
 	try:
